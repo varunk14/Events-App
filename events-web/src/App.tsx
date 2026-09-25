@@ -3,6 +3,7 @@ import { useAuth } from './auth';
 import { api } from './api';
 import type { EventItem } from './types';
 import { AuthPanel } from './components/AuthPanel';
+import { CreateEventForm } from './components/CreateEventForm';
 import { EventList } from './components/EventList';
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
       <main className="grid">
         <section className="col">
           {!user && <AuthPanel />}
+          {user && <CreateEventForm onCreated={load} />}
         </section>
 
         <section className="col wide">
