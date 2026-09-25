@@ -11,16 +11,20 @@ import { UsersModule } from './users/users.module';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (c: ConfigService) => ({
-        type: 'postgres',
-        host: c.get('DB_HOST'),
-        port: +c.get('DB_PORT'),
-        username: c.get('DB_USER'),
-        password: c.get('DB_PASSWORD'),
-        database: c.get('DB_NAME'),
-        autoLoadEntities: true,
-        synchronize: true,
-      }),
+      useFactory: (c: ConfigService) => {
+        const url = c.get<string>('DATABASE_URL');
+        const base = { type: 'postgres' as const, autoLoadEntities: true, synchronize: true };
+        return url
+          ? { ...base, url }
+          : {
+              ...base,
+              host: c.get<string>('DB_HOST'),
+              port: +(c.get<string>('DB_PORT') || 5432),
+              username: c.get<string>('DB_USER'),
+              password: c.get<string>('DB_PASSWORD'),
+              database: c.get<string>('DB_NAME'),
+            };
+      },
     }),
     AuthModule,
     UsersModule,
