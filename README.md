@@ -1,6 +1,19 @@
 # Events App
 
-A monorepo for managing events with spike-safe RSVP handling. NestJS API + React frontend, deployable on Render.
+A monorepo for managing events with spike-safe RSVP handling. NestJS API + React frontend, deployed on Render.
+
+## Live demo
+
+| Service | URL |
+|---------|-----|
+| **Frontend** | Your `events-web` URL on the [Render dashboard](https://dashboard.render.com) |
+| **API** | https://events-api-gj0d.onrender.com |
+| **Swagger** | https://events-api-gj0d.onrender.com/api |
+| **Health** | https://events-api-gj0d.onrender.com/health |
+
+**Demo login:** `demo@rescuerituals.dev` / `demo1234`
+
+> The API runs on Render's free tier and may take 30–60 seconds to wake up after idle time.
 
 ## Structure
 
@@ -12,12 +25,19 @@ events-app/
 └── .github/workflows/keep-alive.yml
 ```
 
+## Features
+
+- JWT authentication (register / login)
+- Event CRUD with creator-only edit/delete
+- RSVP with pessimistic row locking for concurrency-safe capacity handling
+- Waitlist with automatic promotion on cancellation
+
 ## Local development
 
 ### Prerequisites
 
 - Node.js 18+
-- Docker (for local Postgres)
+- Docker (for local Postgres) or local PostgreSQL
 
 ### Database
 
@@ -51,28 +71,16 @@ npm run dev
 
 - App: http://localhost:5173
 
-### Demo login (after seed)
-
-- Email: `demo@rescuerituals.dev`
-- Password: `demo1234`
-
 ## Deployment (Render)
 
-Infra: Render — API on a free Web Service, React on a free Static Site (always-on), managed Postgres. HTTPS and subdomains are provided by Render.
+Infra: Render — API on a free Web Service, React on a free Static Site, managed Postgres. HTTPS and subdomains are provided by Render.
 
 1. Push the repo and apply the root `render.yaml` blueprint in the Render dashboard.
 2. After the first deploy, set environment variables:
-   - **events-api** → `SELF_URL=https://<api-url>/health`
-   - **events-web** → `VITE_API_URL=https://<api-url>`
+   - **events-api** → `SELF_URL=https://events-api-gj0d.onrender.com/health`
+   - **events-web** → `VITE_API_URL=https://events-api-gj0d.onrender.com`
 3. Redeploy both services. The API seeds demo data on startup.
 
 A GitHub Actions cron (`.github/workflows/keep-alive.yml`) pings the API every 14 minutes to reduce cold starts on the free tier.
 
 **Note:** The free API tier idles after 15 minutes; it is kept warm via an internal interval ping plus the GitHub Actions cron. Free Postgres expires in 30 days. For production, use a paid always-on instance and database migrations instead of `synchronize`.
-
-## Features
-
-- JWT authentication (register / login)
-- Event CRUD with creator-only edit/delete
-- RSVP with pessimistic row locking for concurrency-safe capacity handling
-- Waitlist with automatic promotion on cancellation
