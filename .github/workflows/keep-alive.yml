@@ -8,4 +8,4 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -fsS https://events-api-xxxx.onrender.com/health || true
+      - run: curl -fsS https://events-api-gj0d.onrender.com/health || true

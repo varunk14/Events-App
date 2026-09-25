@@ -12,8 +12,8 @@ services:
     plan: free
     region: singapore
     rootDir: events-api
-    buildCommand: npm install && npm run build
-    startCommand: node dist/seed && node dist/main
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: node dist/seed.js && node dist/main.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -37,7 +37,7 @@ services:
     name: events-web
     runtime: static
     rootDir: events-web
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL

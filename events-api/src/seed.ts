@@ -5,23 +5,45 @@ import { User } from './users/user.entity';
 import { Event } from './events/event.entity';
 import { Rsvp } from './rsvp/rsvp.entity';
 
-async function main() {
+function makeDataSource() {
   const url = process.env.DATABASE_URL;
-  const ds = new DataSource(
-    url
-      ? { type: 'postgres', url, entities: [User, Event, Rsvp], synchronize: true }
-      : {
-          type: 'postgres',
-          host: process.env.DB_HOST || 'localhost',
-          port: +(process.env.DB_PORT || 5432),
-          username: process.env.DB_USER || 'events',
-          password: process.env.DB_PASSWORD || 'events_pass',
-          database: process.env.DB_NAME || 'events_db',
-          entities: [User, Event, Rsvp],
-          synchronize: true,
-        },
-  );
-  await ds.initialize();
+  if (url) {
+    return new DataSource({
+      type: 'postgres',
+      url,
+      ssl: url.includes('render.com') ? { rejectUnauthorized: false } : false,
+      entities: [User, Event, Rsvp],
+      synchronize: true,
+    });
+  }
+  return new DataSource({
+    type: 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: +(process.env.DB_PORT || 5432),
+    username: process.env.DB_USER || 'events',
+    password: process.env.DB_PASSWORD || 'events_pass',
+    database: process.env.DB_NAME || 'events_db',
+    entities: [User, Event, Rsvp],
+    synchronize: true,
+  });
+}
+
+async function connectWithRetry(ds: DataSource, attempts = 5) {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      await ds.initialize();
+      return;
+    } catch (err) {
+      if (i === attempts) throw err;
+      console.warn(`DB connect attempt ${i} failed, retrying...`);
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+}
+
+async function main() {
+  const ds = makeDataSource();
+  await connectWithRetry(ds);
 
   const email = process.env.SEED_EMAIL || 'demo@rescuerituals.dev';
   const password = process.env.SEED_PASSWORD || 'demo1234';

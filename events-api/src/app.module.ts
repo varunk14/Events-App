@@ -6,25 +6,31 @@ import { EventsModule } from './events/events.module';
 import { HealthController } from './health/health.controller';
 import { UsersModule } from './users/users.module';
 
+function dbOptions(url: string | undefined, c: ConfigService) {
+  const base = { type: 'postgres' as const, autoLoadEntities: true, synchronize: true };
+  if (url) {
+    return {
+      ...base,
+      url,
+      ssl: url.includes('render.com') ? { rejectUnauthorized: false } : false,
+    };
+  }
+  return {
+    ...base,
+    host: c.get<string>('DB_HOST'),
+    port: +(c.get<string>('DB_PORT') || 5432),
+    username: c.get<string>('DB_USER'),
+    password: c.get<string>('DB_PASSWORD'),
+    database: c.get<string>('DB_NAME'),
+  };
+}
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (c: ConfigService) => {
-        const url = c.get<string>('DATABASE_URL');
-        const base = { type: 'postgres' as const, autoLoadEntities: true, synchronize: true };
-        return url
-          ? { ...base, url }
-          : {
-              ...base,
-              host: c.get<string>('DB_HOST'),
-              port: +(c.get<string>('DB_PORT') || 5432),
-              username: c.get<string>('DB_USER'),
-              password: c.get<string>('DB_PASSWORD'),
-              database: c.get<string>('DB_NAME'),
-            };
-      },
+      useFactory: (c: ConfigService) => dbOptions(c.get<string>('DATABASE_URL'), c),
     }),
     AuthModule,
     UsersModule,
