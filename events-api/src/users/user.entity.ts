@@ -12,7 +12,7 @@ export class User {
   email: string;
 
   @Exclude()
-  @Column()
+  @Column({ select: false })
   passwordHash: string;
 
   @Column()

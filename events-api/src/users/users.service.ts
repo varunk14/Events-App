@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 
+const AUTH_SELECT = ['id', 'email', 'passwordHash', 'name', 'createdAt'] as const;
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -10,11 +12,17 @@ export class UsersService {
   ) {}
 
   findByEmail(email: string) {
-    return this.repo.findOne({ where: { email } });
+    return this.repo.findOne({
+      where: { email },
+      select: [...AUTH_SELECT],
+    });
   }
 
   findById(id: string) {
-    return this.repo.findOne({ where: { id } });
+    return this.repo.findOne({
+      where: { id },
+      select: [...AUTH_SELECT],
+    });
   }
 
   create(data: Pick<User, 'email' | 'passwordHash' | 'name'>) {
