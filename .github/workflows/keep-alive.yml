@@ -1,0 +1,11 @@
+# After first Render deploy, replace the URL below with your API health endpoint.
+name: keep-render-warm
+on:
+  schedule:
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsS https://events-api-xxxx.onrender.com/health || true
