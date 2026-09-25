@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { Event } from '../events/event.entity';
 import { Rsvp } from './rsvp.entity';
 
@@ -7,12 +7,17 @@ import { Rsvp } from './rsvp.entity';
 export class RsvpService {
   constructor(private readonly dataSource: DataSource) {}
 
+  private lockEvent(m: EntityManager, eventId: string) {
+    return m.findOne(Event, {
+      where: { id: eventId },
+      lock: { mode: 'pessimistic_write' },
+      loadEagerRelations: false,
+    });
+  }
+
   async join(eventId: string, userId: string) {
     return this.dataSource.transaction(async (m) => {
-      const event = await m.findOne(Event, {
-        where: { id: eventId },
-        lock: { mode: 'pessimistic_write' },
-      });
+      const event = await this.lockEvent(m, eventId);
       if (!event) throw new NotFoundException('Event not found');
 
       const existing = await m.findOne(Rsvp, { where: { eventId, userId } });
@@ -30,7 +35,7 @@ export class RsvpService {
     });
   }
 
-  private async decideStatus(m: any, event: Event, userId: string) {
+  private async decideStatus(m: EntityManager, event: Event, userId: string) {
     if (event.capacity == null) return 'going';
     const going = await m.count(Rsvp, {
       where: { eventId: event.id, status: 'going' },
@@ -40,10 +45,7 @@ export class RsvpService {
 
   async cancel(eventId: string, userId: string) {
     return this.dataSource.transaction(async (m) => {
-      const event = await m.findOne(Event, {
-        where: { id: eventId },
-        lock: { mode: 'pessimistic_write' },
-      });
+      const event = await this.lockEvent(m, eventId);
       if (!event) throw new NotFoundException('Event not found');
 
       const rsvp = await m.findOne(Rsvp, { where: { eventId, userId } });

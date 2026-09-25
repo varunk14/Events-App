@@ -15,7 +15,7 @@ export class Event {
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   location: string | null;
 
   @Column({ type: 'timestamptz' })
