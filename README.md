@@ -6,7 +6,7 @@ A monorepo for managing events with spike-safe RSVP handling. NestJS API + React
 
 | Service | URL |
 |---------|-----|
-| **Frontend** | Your `events-web` URL on the [Render dashboard](https://dashboard.render.com) |
+| **Frontend** | https://events-web-pycz.onrender.com |
 | **API** | https://events-api-gj0d.onrender.com |
 | **Swagger** | https://events-api-gj0d.onrender.com/api |
 | **Health** | https://events-api-gj0d.onrender.com/health |
